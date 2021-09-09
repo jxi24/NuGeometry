@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+
+if(NOT TARGET nugeometry::nugeometry)
+    include(${CMAKE_CURRENT_LIST_DIR}/nugeometry-targets.cmake)
+endif()
