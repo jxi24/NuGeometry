@@ -20,11 +20,17 @@ class Vector3D {
         const double& X() const { return m_vec[0]; }
         const double& Y() const { return m_vec[1]; }
         const double& Z() const { return m_vec[2]; }
+        const double& R() const { return m_vec[0]; }
+        const double& G() const { return m_vec[1]; }
+        const double& B() const { return m_vec[2]; }
 
         // non-const access
         double& X() { return m_vec[0]; }
         double& Y() { return m_vec[1]; }
         double& Z() { return m_vec[2]; }
+        double& R() { return m_vec[0]; }
+        double& G() { return m_vec[1]; }
+        double& B() { return m_vec[2]; }
 
         // Functions
         double Dot(const Vector3D&) const;
@@ -32,6 +38,9 @@ class Vector3D {
         double Norm2() const { return Dot(*this); }
         double Norm() const { return sqrt(Norm2()); }
         Vector3D Unit() const;
+        Vector3D Abs() const { return {std::abs(X()), std::abs(Y()), std::abs(Z())}; }
+        Vector3D Max(const Vector3D& = Vector3D()) const;
+        double MaxComponent() const;
 
         // Operators
         friend Vector3D operator*(double, const Vector3D&);
@@ -50,18 +59,21 @@ class Vector3D {
         Vector3D& operator/=(double scale) {
             return *this *= 1.0/scale;
         }
-        Vector3D& operator+=(const Vector3D & other) {
+        Vector3D& operator+=(const Vector3D &other) {
             m_vec[0] += other.m_vec[0];
             m_vec[1] += other.m_vec[1];
             m_vec[2] += other.m_vec[2];
 
             return *this;
         }
-        Vector3D& operator-=(const Vector3D & other) {
+        Vector3D& operator-=(const Vector3D &other) {
             return *this += -other;
         }
         Vector3D operator*(double scale) const {
             return Vector3D{*this} *= scale;
+        }
+        double operator*(const Vector3D &other) const {
+            return Dot(other);
         }
         Vector3D operator+(const Vector3D &other) const {
             return Vector3D{*this} += other;
@@ -71,6 +83,12 @@ class Vector3D {
         }
         Vector3D operator-() const {
             return {-m_vec[0], -m_vec[1], -m_vec[2]};
+        }
+
+        template<typename OStream>
+        friend OStream& operator<<(OStream &os, const Vector3D &vec) {
+            os << "Vector3D(" << vec.X() << ", " << vec.Y() << ", " << vec.Z() << ")";
+            return os;
         }
 
     private:

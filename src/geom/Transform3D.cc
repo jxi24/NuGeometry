@@ -2,55 +2,98 @@
 
 #include <array>
 #include <cmath>
+#include <iostream>
 
-NuGeom::Rotation3D::Rotation3D(const Vector3D &axis, double angle)
-    : m_axis{axis}, m_angle{angle} {}
+using NuGeom::Transform3D;
+using NuGeom::Rotation3D;
 
-NuGeom::Rotation3D::Rotation3D(double psi, double theta, double phi, Euler euler) {
-    std::array<double, 9> rotmat1{}, rotmat2{}, rotmat3{};
-    switch(euler) {
-        case Euler::ZYX:
-            rotmat1 = {1, 0, 0, 0, cos(phi), -sin(phi), 0, sin(phi), cos(phi)};
-            rotmat2 = {cos(theta), 0, sin(theta), 0, 1, 0, -sin(theta), 0, cos(theta)};
-            rotmat3 = {cos(psi), -sin(psi), 0, sin(psi), cos(psi), 0, 0, 0, 1};
-            break;
-        case Euler::ZXZ:
-            rotmat1 = {cos(phi), -sin(phi), 0, sin(phi), cos(phi), 0, 0, 0, 1};
-            rotmat2 = {cos(theta), 0, sin(theta), 0, 1, 0, -sin(theta), 0, cos(theta)};
-            rotmat3 = {cos(psi), -sin(psi), 0, sin(psi), cos(psi), 0, 0, 0, 1};
-            break;
-    }
-
-    std::array<double, 9> rotmat{};
-    for(size_t i = 0; i < 3; ++i) {
-        for(size_t j = 0; j < 3; ++j) {
-            for(size_t k = 0; k < 3; ++k) {
-                for(size_t l = 0; l < 3; ++l) {
-                    rotmat[3*i+l] += rotmat1[3*i+j]*rotmat2[3*j+k]*rotmat3[3*k+l];
-                }
-            }
-        }
-    }
-
-    m_angle = acos((rotmat[0]+rotmat[4]+rotmat[8]-1)/2.0);
-    m_axis = {(rotmat[7]-rotmat[5])/(2*sin(m_angle)),
-              (rotmat[6]-rotmat[2])/(2*sin(m_angle)),
-              (rotmat[3]-rotmat[1])/(2*sin(m_angle))};
+Transform3D::Transform3D(double xx, double xy, double xz, double tx,
+                         double yx, double yy, double yz, double ty,
+                         double zx, double zy, double zz, double tz) {
+    m_mat = {xx, xy, xz, tx, yx, yy, yz, ty, zx, zy, zz, tz};
 }
 
-NuGeom::Vector3D NuGeom::Rotation3D::Apply(const Vector3D &in) const {
-    return in*cos(m_angle)+m_axis.Cross(in)*sin(m_angle)+m_axis*m_axis.Dot(in)*(1-cos(m_angle));
+Transform3D::Transform3D(const Rotation3D &rot, const Translation3D &trans) {
+    m_mat = rot.m_mat;
+    m_mat[3] = trans.m_mat[3];
+    m_mat[7] = trans.m_mat[7];
+    m_mat[11] = trans.m_mat[11];
 }
 
-NuGeom::Rotation3D NuGeom::operator*(const NuGeom::Rotation3D &r1, const NuGeom::Rotation3D &r2) {
-    double cosa = cos(r1.m_angle/2.0);
-    double sina = sin(r1.m_angle/2.0);
-    double cosb = cos(r2.m_angle/2.0);
-    double sinb = sin(r2.m_angle/2.0);
-    NuGeom::Rotation3D result;
-    result.m_angle = 2.0*acos(cosa*cosb-sina*sinb*r1.m_axis.Dot(r2.m_axis));
-    result.m_axis = sina*cosb*r1.m_axis + cosa*sinb*r2.m_axis + sina*sinb*r1.m_axis.Cross(r2.m_axis);
-    result.m_axis /= sin(result.m_angle/2.0);
+NuGeom::Vector3D Transform3D::Apply(const Vector3D &point) const {
+    return {m_mat[0]*point.X() + m_mat[1]*point.Y() + m_mat[2]*point.Z() + m_mat[3],
+            m_mat[4]*point.X() + m_mat[5]*point.Y() + m_mat[6]*point.Z() + m_mat[7],
+            m_mat[8]*point.X() + m_mat[9]*point.Y() + m_mat[10]*point.Z() + m_mat[11]};
+}
 
-    return result;
+Transform3D Transform3D::Inverse() const {
+    double detxx = m_mat[5]*m_mat[10] - m_mat[6]*m_mat[9];
+    double detxy = m_mat[6]*m_mat[8] - m_mat[4]*m_mat[10];
+    double detxz = m_mat[4]*m_mat[9] - m_mat[5]*m_mat[8];
+    double det = m_mat[0]*detxx + m_mat[1]*detxy + m_mat[2]*detxz;
+    if(det == 0) {
+        std::cerr << "[WARNING] Transform3D::Inverse() has zero determinant\n";
+        return Transform3D();
+    }
+    det = 1.0/det;
+    detxx *= det;
+    detxy *= det;
+    detxz *= det;
+    double detyx = (m_mat[2]*m_mat[9] - m_mat[1]*m_mat[10])*det;
+    double detyy = (m_mat[0]*m_mat[10] - m_mat[2]*m_mat[8])*det;
+    double detyz = (m_mat[1]*m_mat[8] - m_mat[0]*m_mat[9])*det;
+    double detzx = (m_mat[1]*m_mat[6] - m_mat[2]*m_mat[5])*det;
+    double detzy = (m_mat[2]*m_mat[4] - m_mat[0]*m_mat[6])*det;
+    double detzz = (m_mat[0]*m_mat[5] - m_mat[1]*m_mat[4])*det;
+    return {detxx, detyx, detzx, -detxx*m_mat[3]-detyx*m_mat[7]-detzx*m_mat[11],
+            detxy, detyy, detzy, -detxy*m_mat[3]-detyy*m_mat[7]-detzy*m_mat[11],
+            detxz, detyz, detzz, -detxy*m_mat[3]-detyy*m_mat[7]-detzy*m_mat[11]};
+}
+
+Transform3D Transform3D::operator*(const Transform3D &other) const {
+    return {m_mat[0]*other.m_mat[0] + m_mat[1]*other.m_mat[4] + m_mat[2]*other.m_mat[8],
+            m_mat[0]*other.m_mat[1] + m_mat[1]*other.m_mat[5] + m_mat[2]*other.m_mat[9],
+            m_mat[0]*other.m_mat[2] + m_mat[1]*other.m_mat[6] + m_mat[2]*other.m_mat[10],
+            m_mat[0]*other.m_mat[3] + m_mat[1]*other.m_mat[7] + m_mat[2]*other.m_mat[11] + m_mat[3],
+
+            m_mat[4]*other.m_mat[0] + m_mat[5]*other.m_mat[4] + m_mat[6]*other.m_mat[8],
+            m_mat[4]*other.m_mat[1] + m_mat[5]*other.m_mat[5] + m_mat[6]*other.m_mat[9],
+            m_mat[4]*other.m_mat[2] + m_mat[5]*other.m_mat[6] + m_mat[6]*other.m_mat[10],
+            m_mat[4]*other.m_mat[3] + m_mat[5]*other.m_mat[7] + m_mat[6]*other.m_mat[11] + m_mat[7],
+
+            m_mat[8]*other.m_mat[0] + m_mat[9]*other.m_mat[4] + m_mat[10]*other.m_mat[8],
+            m_mat[8]*other.m_mat[1] + m_mat[9]*other.m_mat[5] + m_mat[10]*other.m_mat[9],
+            m_mat[8]*other.m_mat[2] + m_mat[9]*other.m_mat[6] + m_mat[10]*other.m_mat[10],
+            m_mat[8]*other.m_mat[3] + m_mat[9]*other.m_mat[7] + m_mat[10]*other.m_mat[11] + m_mat[11]};
+}
+
+void Transform3D::Decompose(Scale3D &scale, Rotation3D &rot, Translation3D &trans) const {
+    double sx = std::sqrt(m_mat[0]*m_mat[0] + m_mat[4]*m_mat[4] + m_mat[8]*m_mat[8]);
+    double sy = std::sqrt(m_mat[1]*m_mat[1] + m_mat[5]*m_mat[5] + m_mat[9]*m_mat[9]);
+    double sz = std::sqrt(m_mat[2]*m_mat[2] + m_mat[6]*m_mat[6] + m_mat[10]*m_mat[10]);
+
+    scale.SetTransform({sx,  0,  0, 0,
+                         0, sy,  0, 0,
+                         0,  0, sz, 0});
+    rot.SetTransform({m_mat[0]/sx, m_mat[1]/sy, m_mat[2]/sz, 0,
+                      m_mat[4]/sx, m_mat[5]/sy, m_mat[6]/sz, 0,
+                      m_mat[8]/sx, m_mat[9]/sy, m_mat[10]/sz, 0});
+    trans.SetTransform({1, 0, 0, m_mat[3],
+                        0, 1, 0, m_mat[7],
+                        0, 0, 1, m_mat[11]});
+}
+
+Rotation3D::Rotation3D(const Vector3D &vec, double angle) : Transform3D() {
+    // Ensure the vector is a unit vector
+    auto axis = vec.Unit();
+    double cosa = cos(angle);
+    double sina = sin(angle);
+    std::array<double, 12> mat =
+        {cosa+axis.X()*axis.X()*(1-cosa), axis.X()*axis.Y()*(1-cosa) - axis.Z()*sina,
+         axis.X()*axis.Z()*(1-cosa)+axis.Y()*sina, 0,
+         axis.Y()*axis.X()*(1-cosa)+axis.Z()*sina, cosa+axis.Y()*axis.Y()*(1-cosa),
+         axis.Y()*axis.Z()*(1-cosa)-axis.X()*sina, 0,
+         axis.Z()*axis.X()*(1-cosa)-axis.Y()*sina, axis.Z()*axis.Y()*(1-cosa)+axis.X()*sina,
+         cosa+axis.Z()*axis.Z()*(1-cosa), 0};
+    SetTransform(mat);
 }

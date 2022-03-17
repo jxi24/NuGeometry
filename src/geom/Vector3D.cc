@@ -17,6 +17,14 @@ Vector3D Vector3D::Unit() const {
     return {m_vec[0]/norm, m_vec[1]/norm, m_vec[2]/norm};
 }
 
+Vector3D Vector3D::Max(const Vector3D &other) const {
+    return {std::max(X(), other.X()), std::max(Y(), other.Y()), std::max(Z(), other.Z())};
+}
+
+double Vector3D::MaxComponent() const {
+    return std::max(X(), std::max(Y(), Z()));
+}
+
 Vector3D NuGeom::operator*(double scale, const Vector3D &vec) {
     return Vector3D{vec} *= scale;
 }
