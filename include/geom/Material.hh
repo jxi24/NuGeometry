@@ -6,6 +6,7 @@
 
 namespace NuGeom {
 
+/*
 class BaseMaterial {
     public:
         BaseMaterial() = default;
@@ -23,34 +24,64 @@ class BaseMaterial {
     private:
         std::string m_name{};
         size_t m_ncomponents{};
-};
+}; */
 
-class SimpleMaterial : public BaseMaterial {
+class Material {
     public:
-        SimpleMaterial() = default; 
-        SimpleMaterial(const std::string &name, double density, size_t ncomponents) 
-            : BaseMaterial(name, ncomponents), m_density{density} {}
+        Material() = default; 
+        Material(const std::string &name, double density, size_t ncomponents)
+            : m_name{name}, m_density{density}, m_ncomponents{ncomponents} {}
 
-        std::vector<Element> Elements() const override { return m_elements; }
-        void AddElement(const Element&, int) override;
-        void AddElement(const Element&, double) override;
-        Element SelectElement(double) const override;
-        double Density() const override { return m_density; }
+        size_t NComponents() const { return m_ncomponents; }
+        std::vector<Element> Elements() const { return m_elements; }
+        std::vector<double> MassFractions() const { return m_fractions; }
+        size_t NElements() const { return m_elements.size(); }
+        void AddElement(const Element&, int);
+        void AddElement(const Element&, double);
+        void AddMaterial(const Material&, double);
+        Element SelectElement(double) const;
+        double Density() const { return m_density; }
+        std::string Name() const { return m_name; }
+
+        template<typename OStream>
+        friend OStream& operator<<(OStream &os, const Material &material) {
+            os << "Material:\n";
+            os << "  Name: " << material.Name() << "\n";
+            os << "  Density: " << material.m_density << "\n"; 
+            os << "  NComponents: " << material.m_ncomponents << "\n";
+            os << "  Elements:\n";
+            bool component = material.m_natoms.size() != 0;
+            size_t idx = 0;
+            for(const auto &elm : material.m_elements) {
+                ++idx;
+                if(component) {
+                    os << "    - " << idx << ": " << elm << " " << material.m_natoms[idx-1] << "\n";
+                } else {
+                    os << "    - " << idx << ": " << elm << " " << material.m_fractions[idx-1] << "\n";
+                }
+            }
+            return os;
+        }
 
     private:
+        std::string m_name;
         std::vector<Element> m_elements;
         std::vector<double> m_fractions;
         std::vector<int> m_natoms;
         double m_density;
+        size_t m_ncomponents;
+
+        static std::map<std::string, Material> s_materials;
 };
 
+/*
 // TODO: Wrapper to interface with ROOT TGeoMaterial
 class RootMaterial : public BaseMaterial {
     public:
         std::vector<Element> Elements() const override { return {}; }
-        void AddElement(const Element &/*elm*/, int /*natoms*/) override { }
-        void AddElement(const Element &/*elm*/, double /*fraction*/) override { }
-        Element SelectElement(double /*ran*/) const override { return Element(); }
+        void AddElement(const Element &elm, int natoms) override { }
+        void AddElement(const Element &elm, double fraction) override { }
+        Element SelectElement(double ran) const override { return Element(); }
         double Density() const override { return 0; }
 };
 
@@ -58,11 +89,12 @@ class RootMaterial : public BaseMaterial {
 class GeantMaterial : public BaseMaterial {
     public:
         std::vector<Element> Elements() const override { return {}; }
-        void AddElement(const Element &/*elm*/, int /*natoms*/) override { }
-        void AddElement(const Element &/*elm*/, double /*fraction*/) override { }
-        Element SelectElement(double /*ran*/) const override { return Element(); }
+        void AddElement(const Element &elm, int natoms) override { }
+        void AddElement(const Element &elm, double fraction) override { }
+        Element SelectElement(double ran) const override { return Element(); }
         double Density() const override { return 0; }
 
 };
+*/
 
 }
