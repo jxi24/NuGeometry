@@ -16,24 +16,6 @@ TEST_CASE("Single Rotations", "[Transform3D]") {
         CHECK(result.Y() == Approx(expected.Y()).margin(1e-10));
         CHECK(result.Z() == Approx(expected.Z()).margin(1e-10));
     }
-
-    SECTION("Single rotation from Euler-zyx") {
-        NuGeom::Rotation3D rot{M_PI_2, 0, 0};
-
-        auto result = rot.Apply(input);
-        CHECK(result.X() == Approx(expected.X()).margin(1e-10));
-        CHECK(result.Y() == Approx(expected.Y()).margin(1e-10));
-        CHECK(result.Z() == Approx(expected.Z()).margin(1e-10));
-    }
-
-    SECTION("Single rotation from Euler-zxz") {
-        NuGeom::Rotation3D rot{M_PI_2, 0, 0, NuGeom::Rotation3D::Euler::ZXZ};
-
-        auto result = rot.Apply(input);
-        CHECK(result.X() == Approx(expected.X()).margin(1e-10));
-        CHECK(result.Y() == Approx(expected.Y()).margin(1e-10));
-        CHECK(result.Z() == Approx(expected.Z()).margin(1e-10));
-    }
 }
 
 TEST_CASE("Multiple Rotations") {

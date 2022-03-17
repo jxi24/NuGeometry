@@ -2,9 +2,9 @@
 
 #include "geom/Material.hh"
 
-TEST_CASE("SimpleMaterial", "[Materials]") {
+TEST_CASE("Material", "[Materials]") {
     SECTION("Making Material Works as expected") {
-        NuGeom::SimpleMaterial water("water", 1.0, 2);
+        NuGeom::Material water("water", 1.0, 2);
         CHECK(water.Name() == "water");
         CHECK(water.NComponents() == 2);
         CHECK(water.Density() == 1.0);
@@ -20,7 +20,7 @@ TEST_CASE("SimpleMaterial", "[Materials]") {
         CHECK_THROWS_WITH(water.AddElement(NuGeom::Element("Dummy", 2, 2), 2),
                           Catch::Contains("Too many elements added"));
 
-        NuGeom::SimpleMaterial air("air", 0.00129, 2);
+        NuGeom::Material air("air", 0.00129, 2);
         CHECK(air.Name() == "air");
         CHECK(air.NComponents() == 2);
         CHECK(air.Density() == 0.00129);
@@ -36,7 +36,7 @@ TEST_CASE("SimpleMaterial", "[Materials]") {
         CHECK_THROWS_WITH(air.AddElement(NuGeom::Element("Dummy", 2, 2), 0.5),
                           Catch::Contains("Too many elements added"));
 
-        NuGeom::SimpleMaterial dummy("dummy", 1, 2);
+        NuGeom::Material dummy("dummy", 1, 2);
         dummy.AddElement(NuGeom::Element("Nitrogen"), 0.7);
         CHECK_THROWS_WITH(dummy.AddElement(NuGeom::Element("Oxygen"), 0.7),
                           Catch::Contains("Mass fractions sum to"));
