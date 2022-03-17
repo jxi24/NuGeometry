@@ -11,6 +11,7 @@ add_executable(nugeometry-testsuite
     test_rotations.cc
     test_element.cc
     test_material.cc
+    test_shape.cc
 )
 target_link_libraries(nugeometry-testsuite PRIVATE project_options project_warnings catch_main 
                                            PUBLIC geom)
