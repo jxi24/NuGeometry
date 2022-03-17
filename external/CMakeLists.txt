@@ -9,6 +9,12 @@ CPMAddPackage(
 )
 add_library(yaml::cpp ALIAS yaml-cpp)
 
+CPMAddPackage(
+    NAME pugixml
+    GITHUB_REPOSITORY zeux/pugixml
+    VERSION 1.11.4
+)
+
 # Install testing framework
 if(ENABLE_TESTING OR ENABLE_FUZZING)
     # Catch2
