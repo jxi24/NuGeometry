@@ -22,13 +22,17 @@ class Element {
     public:
         Element() = default;
         Element(const std::string&);
-        Element(const std::string&, size_t, size_t, double=0);
+        Element(const std::string&, size_t, double, size_t=0);
         Element(const std::string&, const std::string&,
-                size_t, size_t, double=0);
+                size_t, double, size_t=0);
         Element(const Element&) = default;
         Element& operator=(const Element &) = default;
         Element(Element&&) = default;
         Element& operator=(Element &&) = default;
+
+        bool operator==(const Element &other) const {
+            return m_Z == other.m_Z;
+        }
 
         std::string Name() const { return m_name; }
         std::string Symbol() const { return m_symbol; }
@@ -38,6 +42,12 @@ class Element {
 
         static std::map<std::string, Element> &CommonElements() {
             return common_elements;
+        }
+
+        template<typename OStream>
+        friend OStream& operator<<(OStream &os, const Element &elm) {
+            os << "Element(" << elm.m_name << ", " << elm.m_symbol << ", " << elm.m_Z << ", " << elm.m_mass << ")";
+            return os;
         }
 };
 
