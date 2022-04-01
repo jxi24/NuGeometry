@@ -18,7 +18,7 @@ TEST_CASE("Single Rotations", "[Transform3D]") {
     }
 }
 
-TEST_CASE("Multiple Rotations") {
+TEST_CASE("Multiple Rotations", "[Transform3D]") {
     SECTION("Combining rotations") {
         const NuGeom::Vector3D input{1, 0, 0};
         const NuGeom::Vector3D expected{0, 0, 1};
