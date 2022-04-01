@@ -8,6 +8,7 @@ target_link_libraries(catch_main PUBLIC Catch2::Catch2 trompeloeil)
 
 add_executable(nugeometry-testsuite 
     # Files with tests 
+    test_translations.cc
     test_rotations.cc
     test_element.cc
     test_material.cc

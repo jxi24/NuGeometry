@@ -7,6 +7,8 @@
 using NuGeom::Transform3D;
 using NuGeom::Rotation3D;
 
+constexpr std::array<double, 12> Transform3D::identity;
+
 Transform3D::Transform3D(double xx, double xy, double xz, double tx,
                          double yx, double yy, double yz, double ty,
                          double zx, double zy, double zz, double tz) {
@@ -47,7 +49,7 @@ Transform3D Transform3D::Inverse() const {
     double detzz = (m_mat[0]*m_mat[5] - m_mat[1]*m_mat[4])*det;
     return {detxx, detyx, detzx, -detxx*m_mat[3]-detyx*m_mat[7]-detzx*m_mat[11],
             detxy, detyy, detzy, -detxy*m_mat[3]-detyy*m_mat[7]-detzy*m_mat[11],
-            detxz, detyz, detzz, -detxy*m_mat[3]-detyy*m_mat[7]-detzy*m_mat[11]};
+            detxz, detyz, detzz, -detxz*m_mat[3]-detyz*m_mat[7]-detzz*m_mat[11]};
 }
 
 Transform3D Transform3D::operator*(const Transform3D &other) const {
