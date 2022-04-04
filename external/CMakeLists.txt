@@ -15,6 +15,24 @@ CPMAddPackage(
     VERSION 1.11.4
 )
 
+CPMAddPackage(
+    NAME fmt
+    GITHUB_REPOSITORY fmtlib/fmt
+    GIT_TAG 8.1.1
+)
+add_library(fmt::fmt ALIAS fmt)
+
+CPMFindPackage(
+    NAME spdlog
+    VERSION 1.9.2
+    GITHUB_REPOSITORY gabime/spdlog
+    OPTIONS
+        "SPDLOG_COMPILED_LIB ON"
+        "SPDLOG_FMT_EXTERNAL ON"
+        "SPDLOG_BUILD_SHARED ON"
+)
+add_library(spdlog::spdlog ALIAS spdlog)
+
 # Install testing framework
 if(ENABLE_TESTING OR ENABLE_FUZZING)
     # Catch2
