@@ -1,5 +1,8 @@
 #include "geom/Material.hh"
 #include "geom/Utilities.hh"
+
+#include "spdlog/spdlog.h"
+
 #include <algorithm>
 #include <iostream>
 #include <numeric>
@@ -46,8 +49,7 @@ void Material::AddElement(const Element &elm, double fraction) {
     if(m_elements.size() == m_ncomponents) {
         auto sum = std::accumulate(m_fractions.begin(), m_fractions.end(), 0.0);
         if(!NuGeom::is_close(sum, 1.0, 1e-4)) {
-            // TODO: Clean up with fmt library
-            std::cerr << "[Warning]: Mass fractions sum to " + std::to_string(sum) + " and not 1\n";
+            spdlog::warn("Material: Mass fractions sum to {} and not 1", sum);
         }
     }
 }

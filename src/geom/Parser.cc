@@ -1,6 +1,6 @@
 #include "geom/Parser.hh"
+#include "spdlog/spdlog.h"
 #include <cstring>
-#include <iostream>
 
 using NuGeom::GDMLParser;
 
@@ -22,7 +22,7 @@ GDMLParser::GDMLParser(const std::string &filename) {
         std::string solid_ref = node.child("solidref").attribute("ref").value();
         Material material = m_materials[material_ref];
         auto shape = m_shapes[solid_ref];
-        auto volume = std::make_shared<Volume>(material, shape);
+        auto volume = std::make_shared<LogicalVolume>(material, shape);
         
         // Check for sub-volumes
         for(const auto &subnode : node.children("physvol")) {
@@ -75,8 +75,9 @@ GDMLParser::GDMLParser(const std::string &filename) {
             m_phys_vols.push_back(phys_vol);
             volume -> AddDaughter(m_phys_vols.back());
         }
-        
-        std::cout << name << "\n  Mass = " << volume -> Mass() << "\n";
+       
+        spdlog::info("Volume: {}", name);
+        spdlog::info("  Mass = {}", volume -> Mass());
         // Store volume information
         m_volumes[name] = volume;
     }
@@ -84,13 +85,13 @@ GDMLParser::GDMLParser(const std::string &filename) {
     auto setup = root.child("setup");
     m_world = World(m_volumes[setup.child("world").attribute("ref").value()]);
 
-    std::cout << "Number of constants defined: " << m_def_constants.size() << "\n";
-    std::cout << "Number of positions defined: " << m_def_positions.size() << "\n";
-    std::cout << "Number of rotations defined: " << m_def_rotations.size() << "\n";
-    std::cout << "Number of materials: " << m_materials.size() << "\n";
-    std::cout << "Number of solids: " << m_shapes.size() << "\n";
-    std::cout << "Number of volumes: " << m_volumes.size() << "\n";
-    std::cout << "Number of physical volumes: " << m_phys_vols.size() << "\n";
+    spdlog::info("Number of constants defined: {}", m_def_constants.size());
+    spdlog::info("Number of positions defined: {}", m_def_positions.size());
+    spdlog::info("Number of rotations defined: {}", m_def_rotations.size());
+    spdlog::info("Number of materials: {}", m_materials.size());
+    spdlog::info("Number of solids: {}", m_shapes.size());
+    spdlog::info("Number of volumes: {}", m_volumes.size());
+    spdlog::info("Number of physical volumes: {}", m_phys_vols.size());
 }
 
 void GDMLParser::ParseDefines(const pugi::xml_node &define) {

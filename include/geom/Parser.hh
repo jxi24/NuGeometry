@@ -36,7 +36,7 @@ class GDMLParser : public Parser {
         std::map<std::string, Transform3D> m_def_rotations;
         std::map<std::string, Material> m_materials;
         std::map<std::string, std::shared_ptr<Shape>> m_shapes;
-        std::map<std::string, std::shared_ptr<Volume>> m_volumes;
+        std::map<std::string, std::shared_ptr<LogicalVolume>> m_volumes;
         std::vector<std::shared_ptr<PhysicalVolume>> m_phys_vols;
 
         World m_world;
