@@ -31,6 +31,11 @@ TEST_CASE("Box", "[Shapes]") {
         point = NuGeom::Vector3D(0, 0, 1.5);
         CHECK(box.SignedDistance(point) == 1);
     }
+
+    SECTION("Volume is correct") {
+        NuGeom::Box box;
+        CHECK(box.Volume() == 1);
+    }
 }
 
 TEST_CASE("Sphere", "[Shapes]") {
@@ -63,6 +68,11 @@ TEST_CASE("Sphere", "[Shapes]") {
         point = NuGeom::Vector3D(1, 1, 1);
         CHECK(sphere.SignedDistance(point) == sqrt(3) - 1);
     }
+
+    SECTION("Volume is correct") {
+        NuGeom::Sphere sphere;
+        CHECK(sphere.Volume() == Approx(4.0*M_PI/3.0));
+    }
 }
 
 TEST_CASE("Cylinder", "[Shapes]") {
@@ -94,6 +104,11 @@ TEST_CASE("Cylinder", "[Shapes]") {
         CHECK(cylinder.SignedDistance(point) == Approx(0.0).margin(1e-15));
         point = NuGeom::Vector3D(2, 1, 0);
         CHECK(cylinder.SignedDistance(point) == 1);
+    }
+
+    SECTION("Volume is correct") {
+        NuGeom::Cylinder cylinder;
+        CHECK(cylinder.Volume() == Approx(M_PI));
     }
 }
 
@@ -131,7 +146,6 @@ TEST_CASE("Combined Shape", "[Shapes]") {
     NuGeom::Vector3D size{2, 2, 2};
     NuGeom::Rotation3D rotation;
     NuGeom::Translation3D translation{0, 0, 2};
-    // TODO: Switch to mock shapes?
     auto box = std::make_shared<NuGeom::Box>(size);
     auto sphere = std::make_shared<NuGeom::Sphere>(1, rotation, translation);
     NuGeom::Vector3D point = GENERATE(take(30, randomPoint(-5, 5)));

@@ -1,6 +1,21 @@
 #include "catch2/catch.hpp"
 
 #include "geom/Material.hh"
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/ostream_sink.h"
+
+#include <sstream>
+
+// Make logger send to stringstream
+static std::ostringstream test_logger() {
+    std::ostringstream oss;
+    auto oss_sink = std::make_shared<spdlog::sinks::ostream_sink_mt>(oss);
+    auto oss_logger = std::make_shared<spdlog::logger>("test_log", oss_sink);
+    oss_logger -> set_level(spdlog::level::debug);
+    spdlog::register_logger(oss_logger);
+    spdlog::set_default_logger(oss_logger);
+    return oss;
+}
 
 TEST_CASE("Material", "[Materials]") {
     SECTION("Making Material Works as expected") {
@@ -36,10 +51,10 @@ TEST_CASE("Material", "[Materials]") {
         CHECK_THROWS_WITH(air.AddElement(NuGeom::Element("Dummy", 2, 2), 0.5),
                           Catch::Contains("Too many elements added"));
 
-        // TODO: Change to check for warning printed to stdout about mass fraction > 1
-        // NuGeom::Material dummy("dummy", 1, 2);
-        // dummy.AddElement(NuGeom::Element("Nitrogen"), 0.7);
-        // CHECK_THROWS_WITH(dummy.AddElement(NuGeom::Element("Oxygen"), 0.7),
-        //                   Catch::Contains("Mass fractions sum to"));
+        auto oss = test_logger();
+        NuGeom::Material dummy("dummy", 1, 2);
+        dummy.AddElement(NuGeom::Element("Nitrogen"), 0.7);
+        dummy.AddElement(NuGeom::Element("Oxygen"), 0.7);
+        CHECK_THAT(oss.str(), Catch::Contains("Mass fractions sum to 1.4 and not 1"));
     }
 }
