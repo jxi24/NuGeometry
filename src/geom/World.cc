@@ -10,14 +10,14 @@ using NuGeom::World;
 NuGeom::Shape* World::GetShape(size_t idx) const {
     if(idx == 0) return m_volume->GetShape();
     else {
-        return m_volume -> Daughters()[idx-1]->GetVolume()->GetShape();
+        return m_volume -> Daughters()[idx-1]->GetLogicalVolume()->GetShape();
     }
 }
 
 NuGeom::Material World::GetMaterial(size_t idx) const {
     if(idx == 0) return m_volume->GetMaterial();
     else {
-        return m_volume -> Daughters()[idx-1]->GetVolume()->GetMaterial();
+        return m_volume -> Daughters()[idx-1]->GetLogicalVolume()->GetMaterial();
     }
 }
 

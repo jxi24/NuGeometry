@@ -7,43 +7,44 @@ namespace NuGeom {
 
 class PhysicalVolume;
 
-class Volume {
+class LogicalVolume {
     public:
-        Volume() = default;
-        Volume(Material material, std::shared_ptr<Shape> shape)
+        LogicalVolume() = default;
+        LogicalVolume(Material material, std::shared_ptr<Shape> shape)
             : m_material{std::move(material)}, m_shape{std::move(shape)} {}
 
         Material GetMaterial() const { return m_material; }
         Shape* GetShape() const { return m_shape.get(); }
-        Volume* Mother() const { return m_mother.get(); }
+        LogicalVolume* Mother() const { return m_mother.get(); }
         std::vector<std::shared_ptr<PhysicalVolume>> Daughters() const { return m_daughters; }
-        void SetMother(std::shared_ptr<Volume> mother) { m_mother = mother; }
+        void SetMother(std::shared_ptr<LogicalVolume> mother) { m_mother = mother; }
         void AddDaughter(std::shared_ptr<PhysicalVolume> daughter) { m_daughters.push_back(daughter); }
-        double Mass() const {
-            return m_shape -> Volume() * m_material.Density();
-        }
+        double Volume() const;
+        double Mass() const;
 
     private:
+        double DaughterVolumes() const;
+        double DaughterMass() const;
 
         Material m_material;
         std::shared_ptr<Shape> m_shape;
         std::vector<std::shared_ptr<PhysicalVolume>> m_daughters;
-        std::shared_ptr<Volume> m_mother = nullptr;
+        std::shared_ptr<LogicalVolume> m_mother = nullptr;
 };
 
 class PhysicalVolume {
     public:
         PhysicalVolume() = default;
-        PhysicalVolume(std::shared_ptr<Volume> volume, Transform3D trans, Transform3D rot)
+        PhysicalVolume(std::shared_ptr<LogicalVolume> volume, Transform3D trans, Transform3D rot)
             : m_volume{std::move(volume)} {
 
             m_transform = (rot*trans);
         }
 
-        Volume* GetVolume() const { return m_volume.get(); }
+        LogicalVolume* GetLogicalVolume() const { return m_volume.get(); }
         Transform3D GetTransform() const { return m_transform; }
-        Volume* Mother() const { return m_volume -> Mother(); }
-        void SetMother(std::shared_ptr<Volume> mother) { m_volume -> SetMother(mother); }
+        LogicalVolume* Mother() const { return m_volume -> Mother(); }
+        void SetMother(std::shared_ptr<LogicalVolume> mother) { m_volume -> SetMother(mother); }
         std::vector<std::shared_ptr<PhysicalVolume>> Daughters() const { return m_volume -> Daughters(); }
         double SignedDistance(const Vector3D &in_point) const {
             auto point = TransformPoint(in_point);
@@ -55,7 +56,7 @@ class PhysicalVolume {
             return m_transform.Apply(point);
         }
 
-        std::shared_ptr<Volume> m_volume;
+        std::shared_ptr<LogicalVolume> m_volume;
         Transform3D m_transform;
 };
 

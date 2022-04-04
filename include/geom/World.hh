@@ -13,7 +13,7 @@ class LineSegment;
 class World {
     public:
         World() = default;
-        World(std::shared_ptr<Volume> volume) : m_volume{std::move(volume)} {}
+        World(std::shared_ptr<LogicalVolume> volume) : m_volume{std::move(volume)} {}
         World(Vector3D min, Vector3D max, 
               size_t max_steps = 1000, double epsilon = 1e-4)
             : m_min{min}, m_max{max},
@@ -33,7 +33,7 @@ class World {
         Vector3D m_min{}, m_max{};
         size_t m_max_steps{512};
         double m_epsilon{1e-4};
-        std::shared_ptr<Volume> m_volume;
+        std::shared_ptr<LogicalVolume> m_volume;
 };
 
 }
