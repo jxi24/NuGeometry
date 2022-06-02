@@ -25,12 +25,20 @@ class Vector4D {
         const double& Y() const { return m_vec[1]; }
         const double& Z() const { return m_vec[2]; }
         const double& W() const { return m_vec[3]; }
+        const double& R() const { return m_vec[0]; }
+        const double& G() const { return m_vec[1]; }
+        const double& B() const { return m_vec[2]; }
+        const double& A() const { return m_vec[3]; }
 
         // non-const access
         double& X() { return m_vec[0]; }
         double& Y() { return m_vec[1]; }
         double& Z() { return m_vec[2]; }
         double& W() { return m_vec[3]; }
+        double& R() { return m_vec[0]; }
+        double& G() { return m_vec[1]; }
+        double& B() { return m_vec[2]; }
+        double& A() { return m_vec[3]; }
 
         // Functions
         double Dot(const Vector4D&) const;

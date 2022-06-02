@@ -44,11 +44,15 @@ class Vector3D {
 
         // Operators
         friend Vector3D operator*(double, const Vector3D&);
-        friend Vector3D operator/(double, const Vector3D&);
+        friend Vector3D operator/(const Vector3D&, double);
    
         bool operator==(const Vector3D &other) const {
             return m_vec == other.m_vec;
         }
+        bool operator!=(const Vector3D &other) const {
+            return !(*this == other);
+        }
+
         Vector3D& operator*=(double scale) {
             m_vec[0] *= scale;
             m_vec[1] *= scale;
@@ -96,6 +100,6 @@ class Vector3D {
 };
 
 Vector3D operator*(double, const Vector3D&);
-Vector3D operator/(double, const Vector3D&);
+Vector3D operator/(const Vector3D&, double);
 
 }

@@ -23,6 +23,6 @@ Vector2D NuGeom::operator*(double scale, const Vector2D &vec) {
     return Vector2D{vec} *= scale;
 }
 
-Vector2D NuGeom::operator/(double scale, const Vector2D &vec) {
+Vector2D NuGeom::operator/(const Vector2D &vec, double scale) {
     return Vector2D{vec} /= scale;
 }

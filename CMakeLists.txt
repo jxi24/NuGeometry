@@ -75,6 +75,11 @@ if(ENABLE_FUZZING)
     add_subdirectory(fuzz_test)
 endif()
 
+# Add python support
+if(ENABLE_PYTHON)
+    find_package(Python COMPONENTS Interpreter Development REQUIRED)
+endif()
+
 # Main code
 add_subdirectory(src)
 

@@ -26,7 +26,6 @@ class Vector2D {
 
         // Functions
         double Dot(const Vector2D&) const;
-        Vector2D Cross(const Vector2D&) const;
         double Norm2() const { return Dot(*this); }
         double Norm() const { return sqrt(Norm2()); }
         Vector2D Unit() const;
@@ -36,11 +35,15 @@ class Vector2D {
 
         // Operators
         friend Vector2D operator*(double, const Vector2D&);
-        friend Vector2D operator/(double, const Vector2D&);
+        friend Vector2D operator/(const Vector2D&, double);
    
         bool operator==(const Vector2D &other) const {
             return m_vec == other.m_vec;
         }
+        bool operator!=(const Vector2D &other) const {
+            return !(*this == other);
+        }
+
         Vector2D& operator*=(double scale) {
             m_vec[0] *= scale;
             m_vec[1] *= scale;
@@ -77,6 +80,6 @@ class Vector2D {
 };
 
 Vector2D operator*(double, const Vector2D&);
-Vector2D operator/(double, const Vector2D&);
+Vector2D operator/(const Vector2D&, double);
 
 }

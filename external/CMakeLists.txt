@@ -33,13 +33,20 @@ CPMFindPackage(
 )
 add_library(spdlog::spdlog ALIAS spdlog)
 
+#pybind11
+CPMAddPackage(
+    NAME pybind11
+    GITHUB_REPOSITORY pybind/pybind11
+    GIT_TAG v2.9.2
+)
+
 # Install testing framework
 if(ENABLE_TESTING OR ENABLE_FUZZING)
     # Catch2
     CPMAddPackage(
         NAME catch2
         GITHUB_REPOSITORY catchorg/Catch2
-        GIT_TAG cfb695669830ceb73b0875a20af4241944eb48e0
+        VERSION 2.13.9
     )
     add_library(Catch2::Catch2 ALIAS Catch2)
 

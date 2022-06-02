@@ -33,6 +33,9 @@ class Element {
         bool operator==(const Element &other) const {
             return m_Z == other.m_Z;
         }
+        bool operator!=(const Element &other) const {
+            return !(*this == other);
+        }
 
         std::string Name() const { return m_name; }
         std::string Symbol() const { return m_symbol; }
