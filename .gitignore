@@ -2,3 +2,5 @@
 build/
 .cache
 include/geom/System.hh
+*egg-info
+*.so
