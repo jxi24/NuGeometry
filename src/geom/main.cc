@@ -5,52 +5,11 @@
 #include "geom/Vector2D.hh"
 #include "geom/Vector3D.hh"
 #include "geom/Ray.hh"
+#include "geom/Camera.hh"
 #include "geom/World.hh"
 #include "geom/LineSegment.hh"
 
-constexpr size_t imgWidth = 1080;
-constexpr size_t imgHeight = 720;
-
-using NuGeom::Vector2D;
 using NuGeom::Vector3D;
-
-class Camera {
-    public:
-        Camera(const Vector3D &pos, const Vector3D &target, double fov=90, double zoom=1) :
-            m_pos{pos}, m_target{target}, m_fov{std::tan(fov*M_PI/180/2)}, m_zoom{zoom} {
-            
-            m_forward = (m_target - m_pos).Unit();
-            m_right = Vector3D(0, 1, 0).Cross(m_forward);
-            m_up = m_forward.Cross(m_right).Unit();
-            m_width = double(imgWidth);
-            m_height = double(imgHeight);
-            m_aspect = m_width / m_height;
-        }
-
-        NuGeom::Ray MakeRay(size_t px, size_t py) const {
-            return NuGeom::Ray(m_pos, RayDirection(px, py));
-        }
-
-    private:
-        Vector3D RayDirection(size_t px, size_t py) const {
-            Vector2D uv = NormalizeScreen(px, py);
-            return uv.X() * m_right + uv.Y() * m_up + m_zoom * m_forward;
-        }
-
-        Vector2D NormalizeScreen(size_t px, size_t py) const {
-            double x = double(px) / m_width * 2 - 1;
-            double y = double(py) / m_height * 2 - 1;
-            x *= m_aspect * m_fov;
-            y *= m_fov;
-
-            return {x, y};
-        }
-
-        Vector3D m_pos, m_target;
-        Vector3D m_forward, m_right, m_up;
-        double m_fov, m_zoom;
-        double m_width, m_height, m_aspect;
-};
 
 Vector3D CalcNormal(NuGeom::World world, const Vector3D &pos) {
     // Center sample
@@ -67,14 +26,15 @@ Vector3D CalcNormal(NuGeom::World world, const Vector3D &pos) {
                             shape -> SignedDistance(pos + eps*zAxis) - c).Unit();
 }
 
-void PixelColor(const NuGeom::World &world, const Camera &camera, size_t i, size_t j, Vector3D &color, Vector3D &cost) {
+void PixelColor(const NuGeom::World &world, const NuGeom::Camera &camera, size_t i, size_t j, Vector3D &color, Vector3D &/*cost*/) {
     // Get ray
     NuGeom::Ray ray = camera.MakeRay(i, j);
 
     double distance = 0;
-    size_t step = 0;
+    // size_t step = 0;
     size_t idx;
-    bool hit = world.SphereTrace(ray, distance, step, idx);
+    // bool hit = world.SphereTrace(ray, distance, step, idx);
+    bool hit = world.RayTrace(ray, distance, idx);
     if(!hit || idx == 0) {
         Vector3D offset(ray.Direction().Y() * 0.4, ray.Direction().Y() * 0.4, ray.Direction().Y() * 0.4);
         color = Vector3D(0.30, 0.36, 0.60) - offset;
@@ -111,15 +71,15 @@ void PixelColor(const NuGeom::World &world, const Camera &camera, size_t i, size
     color = Vector3D(pow(color.X(), 0.4545),
                              pow(color.Y(), 0.4545),
                              pow(color.Z(), 0.4545));
-    cost = Vector3D(1, 0, 0)*(double(step)/512);
+    // cost = Vector3D(1, 0, 0)*(double(step)/512);
 }
 
 bool WriteToFile(const std::string &filename, const std::vector<Vector3D> &pixels) {
     std::ofstream out(filename);
-    out << "P3\n" << imgWidth << " " << imgHeight << "\n255\n";
-    for(size_t j = imgHeight; j != 0; --j) {
-        for(size_t i = 0; i < imgWidth; ++i) {
-            Vector3D color = pixels[i*imgHeight + j];
+    out << "P3\n" << NuGeom::Camera::Width() << " " << NuGeom::Camera::Height() << "\n255\n";
+    for(size_t j = NuGeom::Camera::Height(); j != 0; --j) {
+        for(size_t i = 0; i < NuGeom::Camera::Width(); ++i) {
+            Vector3D color = pixels[i*NuGeom::Camera::Height() + j];
             int ir = std::max(int(255.99*color.R()), 0);
             int ib = std::max(int(255.99*color.B()), 0);
             int ig = std::max(int(255.99*color.G()), 0);
@@ -131,15 +91,15 @@ bool WriteToFile(const std::string &filename, const std::vector<Vector3D> &pixel
     return true;
 }
 
-void render(const NuGeom::World& world, const Camera &camera, std::vector<Vector3D> &pixels, std::vector<Vector3D> pixelsCost) {
+void render(const NuGeom::World& world, const NuGeom::Camera &camera, std::vector<Vector3D> &pixels, std::vector<Vector3D> pixelsCost) {
     std::cout << "Rendering..." << std::endl;
-    for(size_t i = 0; i < imgWidth; ++i) {
+    for(size_t i = 0; i < NuGeom::Camera::Width(); ++i) {
         if(i % 10 == 0) std::cout << "Rendering row: " << i << "\r";
-        for(size_t j = 0; j < imgHeight; ++j) {
+        for(size_t j = 0; j < NuGeom::Camera::Height(); ++j) {
             Vector3D color, cost;
             PixelColor(world, camera, i, j, color, cost);
-            pixels[i*imgHeight + j] = color;
-            pixelsCost[i*imgHeight + j] = cost;
+            pixels[i*NuGeom::Camera::Height() + j] = color;
+            pixelsCost[i*NuGeom::Camera::Height() + j] = cost;
         }
         std::cout << std::flush;
     }
@@ -164,7 +124,7 @@ void line(int x0, int y0, int x1, int y1, std::vector<Vector3D> &pixels) {
     int y = y0;
     if(steep) {
         for(int x=x0; x<=x1; x++) {
-            pixels[static_cast<size_t>(y)*imgHeight + static_cast<size_t>(x)] = Vector3D(1, 0, 0);
+            pixels[static_cast<size_t>(y)*NuGeom::Camera::Height() + static_cast<size_t>(x)] = Vector3D(1, 0, 0);
             error2 += derror2;
             if(error2 > dx) {
                 y += (y1 > y0 ? 1 : -1);
@@ -173,7 +133,7 @@ void line(int x0, int y0, int x1, int y1, std::vector<Vector3D> &pixels) {
         }
     } else {
         for(int x=x0; x<=x1; x++) {
-            pixels[static_cast<size_t>(x)*imgHeight + static_cast<size_t>(y)] = Vector3D(1, 0, 0);
+            pixels[static_cast<size_t>(x)*NuGeom::Camera::Height() + static_cast<size_t>(y)] = Vector3D(1, 0, 0);
             error2 += derror2;
             if(error2 > dx) {
                 y += (y1 > y0 ? 1 : -1);
@@ -187,10 +147,10 @@ void renderRay(const NuGeom::Ray &ray, double t, std::vector<Vector3D> &pixels) 
     Vector3D start = ray.Origin();
     Vector3D end = ray.Propagate(t);
 
-    int x0 = static_cast<int>((start.X() + 1)*static_cast<double>(imgWidth) / 2.0);
-    int y0 = static_cast<int>((start.Y() + 1)*static_cast<double>(imgHeight) / 2.0);
-    int x1 = static_cast<int>((end.X() + 1)*static_cast<double>(imgWidth) / 2.0);
-    int y1 = static_cast<int>((end.Y() + 1)*static_cast<double>(imgHeight) / 2.0);
+    int x0 = static_cast<int>((start.X() + 1)*static_cast<double>(NuGeom::Camera::Width()) / 2.0);
+    int y0 = static_cast<int>((start.Y() + 1)*static_cast<double>(NuGeom::Camera::Height()) / 2.0);
+    int x1 = static_cast<int>((end.X() + 1)*static_cast<double>(NuGeom::Camera::Width()) / 2.0);
+    int y1 = static_cast<int>((end.Y() + 1)*static_cast<double>(NuGeom::Camera::Height()) / 2.0);
 
     line(x0, y0, x1, y1, pixels);
 }
@@ -203,31 +163,35 @@ int main(int argc, char* argv[]) {
     NuGeom::GDMLParser parse(argv[1]);
     NuGeom::World world = parse.GetWorld();
 
-    Camera camera({-150, 0, 0}, {0, 0, 0}, 90, 1);
+    NuGeom::Camera camera({-150, 30, 30}, {0, 0, 0}, 90, 1);
 
-    std::vector<Vector3D> pixels(imgHeight*imgWidth);
-    std::vector<Vector3D> pixelsCost(imgHeight*imgWidth);
+    std::vector<Vector3D> pixels(NuGeom::Camera::Height()*NuGeom::Camera::Width());
+    std::vector<Vector3D> pixelsCost(NuGeom::Camera::Height()*NuGeom::Camera::Width());
 
+    auto render_start = std::chrono::high_resolution_clock::now(); 
     render(world, camera, pixels, pixelsCost);
+    auto render_end = std::chrono::high_resolution_clock::now(); 
+    std::chrono::duration<double> render_elapsed = render_end - render_start;
+    std::cout << "Total Time for render = " << render_elapsed.count() << "\n";
 
-    // Camera neutrino({0, 0, -10}, {0, 0, 0});
+    NuGeom::Camera neutrino({-150, 0, 0}, {0, 0, 0});
 
-    // // Get ray
-    // constexpr size_t nrays = 1000;
-    // auto start = std::chrono::high_resolution_clock::now(); 
-    // for(size_t i = 0; i < nrays; ++i) {
-    //     NuGeom::Ray ray = neutrino.MakeRay(imgWidth/2, imgHeight/2);
-    //     (void)world.GetLineSegments(ray);
-    // }
-    // auto end = std::chrono::high_resolution_clock::now(); 
-    // std::chrono::duration<double> elapsed = end - start;
-    // std::cout << "Total Time for " << nrays << " rays = " << elapsed.count() << "\n";
-    // std::cout << "Time per ray = " << elapsed.count() / nrays << "\n";
-    // NuGeom::Ray ray = neutrino.MakeRay(imgWidth/2, imgHeight/2);
-    // auto lines = world.GetLineSegments(ray);
-    // for(const auto &line : lines) {
-    //     std::cout << line.Length() << " " << (line.ShapeID() == SIZE_MAX ? -1 : static_cast<int>(line.ShapeID())) << "\n";
-    // }
+    // Get ray
+    constexpr size_t nrays = 10000;
+    auto start = std::chrono::high_resolution_clock::now(); 
+    for(size_t i = 0; i < nrays; ++i) {
+        NuGeom::Ray ray = neutrino.MakeRay(NuGeom::Camera::Width()/2, NuGeom::Camera::Height()/2);
+        (void)world.GetLineSegments(ray);
+    }
+    auto end = std::chrono::high_resolution_clock::now(); 
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "Total Time for " << nrays << " rays = " << elapsed.count() << "\n";
+    std::cout << "Time per ray = " << elapsed.count() / nrays << "\n";
+    NuGeom::Ray ray = neutrino.MakeRay(NuGeom::Camera::Width()/2, NuGeom::Camera::Height()/2);
+    auto lines = world.GetLineSegments(ray);
+    for(const auto &line : lines) {
+        std::cout << line.Length() << " " << (line.ShapeID() == SIZE_MAX ? -1 : static_cast<int>(line.ShapeID())) << "\n";
+    }
 
     // renderRay(ray, 100, pixels);
 

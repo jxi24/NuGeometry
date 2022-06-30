@@ -99,3 +99,11 @@ Rotation3D::Rotation3D(const Vector3D &vec, double angle) : Transform3D() {
          cosa+axis.Z()*axis.Z()*(1-cosa), 0};
     SetTransform(mat);
 }
+
+Rotation3D::Rotation3D(const Transform3D &rot) {
+    SetTransform(rot.GetTransform());
+}
+
+NuGeom::Translation3D::Translation3D(const Transform3D &trans) {
+    SetTransform(trans.GetTransform());
+}

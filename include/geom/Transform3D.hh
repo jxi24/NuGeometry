@@ -38,10 +38,10 @@ class Transform3D {
             os << output << ")";
             return os;
         }
+        std::array<double, 12> GetTransform() const { return m_mat; }
 
     protected:
         void SetTransform(const std::array<double, 12> &trans) { m_mat = trans; }
-        std::array<double, 12> GetTransform() const { return m_mat; }
 
     private:
         std::array<double, 12> m_mat;
@@ -76,6 +76,7 @@ class Rotation3D : public Transform3D {
     public:
         Rotation3D() = default;
         Rotation3D(const Vector3D&, double);
+        Rotation3D(const Transform3D&);
 };
 
 class RotationX3D : public Rotation3D {
@@ -102,6 +103,7 @@ class Translation3D : public Transform3D {
         Translation3D(double x, double y, double z) : Transform3D(1, 0, 0, x,
                                                                   0, 1, 0, y,
                                                                   0, 0, 1, z) {}
+        Translation3D(const Transform3D&);
 };
 
 class TranslationX3D : public Translation3D {

@@ -9,6 +9,7 @@
 #include "geom/Shape.hh"
 #include "geom/Element.hh"
 #include "geom/Material.hh"
+#include "geom/Camera.hh"
 
 PYBIND11_MODULE(nugeom, m) {
     // XML Parser module
@@ -236,6 +237,12 @@ void WorldModule(py::module &m) {
         .def("origin", &NuGeom::Ray::Origin)
         .def("direction", &NuGeom::Ray::Direction)
         .def("propagate", &NuGeom::Ray::Propagate);
+
+    py::class_<NuGeom::Camera>(m, "Camera")
+        .def(py::init<const NuGeom::Vector3D&, const NuGeom::Vector3D&, double, double>())
+        .def("make_ray", &NuGeom::Camera::MakeRay)
+        .def_static("width", &NuGeom::Camera::Width)
+        .def_static("height", &NuGeom::Camera::Height);
 
     py::class_<NuGeom::World>(m, "World")
         .def(py::init<>())

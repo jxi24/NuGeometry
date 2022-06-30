@@ -24,6 +24,7 @@ class World {
 
         bool InWorld(const Vector3D&) const;
         bool SphereTrace(const Ray&, double&, size_t&, size_t&) const;
+        bool RayTrace(const Ray&, double&, size_t&) const;
         std::vector<LineSegment> GetLineSegments(const Ray&) const;
 
     private:

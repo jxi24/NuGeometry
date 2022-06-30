@@ -8,7 +8,7 @@ namespace NuGeom {
 class Vector3D {
     public:
         Vector3D() : m_vec{} {}
-        Vector3D(double x, double y, double z) : m_vec{x, y, z} {}
+        constexpr Vector3D(double x, double y, double z) : m_vec{x, y, z} {}
         Vector3D(std::array<double, 3> vec) : m_vec{vec} {}
         Vector3D(const Vector3D&) = default;
         Vector3D(Vector3D&&) = default;
@@ -101,5 +101,9 @@ class Vector3D {
 
 Vector3D operator*(double, const Vector3D&);
 Vector3D operator/(const Vector3D&, double);
+
+static constexpr Vector3D UnitX = Vector3D(1, 0, 0);
+static constexpr Vector3D UnitY = Vector3D(0, 1, 0);
+static constexpr Vector3D UnitZ = Vector3D(0, 0, 1);
 
 }

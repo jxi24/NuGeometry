@@ -14,6 +14,8 @@ class xml_node;
 
 namespace NuGeom {
 
+class Ray;
+
 enum class Location {
     kInterior,
     kSurface,
@@ -43,12 +45,19 @@ class Shape {
         ///@return double: The signed distance from the surface 
         virtual double SignedDistance(const Vector3D&) const = 0;
 
+        /// Finds if a given ray intersects the shape 
+        ///@param ray: The ray to check for an intersection
+        ///@return double: The time that the intersection occurs at
+        virtual double Intersect(const Ray&) const = 0;
+
         void SetRotation(const Rotation3D& rot) { m_rotation = rot.Inverse(); }
         void SetTranslation(const Translation3D &trans) { m_translation = trans.Inverse(); }
         virtual double Volume() const = 0;
 
     protected:
         Vector3D TransformPoint(const Vector3D&) const;
+        Ray TransformRay(const Ray&) const;
+        std::pair<double, double> SolveQuadratic(double, double, double) const;
 
     private:
         Transform3D m_rotation;
@@ -120,6 +129,7 @@ class CombinedShape : public Shape, RegistrableShape<CombinedShape> {
         static std::unique_ptr<Shape> Construct(const pugi::xml_node &node);
 
         double SignedDistance(const Vector3D&) const override;
+        double Intersect(const Ray&) const override;
         double Volume() const override;
 
     private:
@@ -143,6 +153,7 @@ class Box : public Shape, RegistrableShape<Box> {
         static std::unique_ptr<Shape> Construct(const pugi::xml_node &node);
 
         double SignedDistance(const Vector3D&) const override;
+        double Intersect(const Ray&) const override;
         double Volume() const override { return m_params.X()*m_params.Y()*m_params.Z()*8; }
 
     private:
@@ -165,6 +176,7 @@ class Sphere : public Shape, RegistrableShape<Sphere> {
         static std::unique_ptr<Shape> Construct(const pugi::xml_node &node);
 
         double SignedDistance(const Vector3D&) const override;
+        double Intersect(const Ray&) const override;
         double Volume() const override { return m_radius*m_radius*m_radius*4*M_PI/3.0; }
 
     private:
@@ -189,6 +201,7 @@ class Cylinder : public Shape, RegistrableShape<Cylinder> {
         static std::unique_ptr<Shape> Construct(const pugi::xml_node &node);
 
         double SignedDistance(const Vector3D&) const override;
+        double Intersect(const Ray&) const override;
         double Volume() const override { return m_radius*m_radius*m_height*M_PI; }
 
     private:
