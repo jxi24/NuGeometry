@@ -13,6 +13,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     strategy:
+      fail-fast: false
       matrix:
         config:
           - {
@@ -64,7 +65,8 @@ jobs:
             ${{ matrix.config.name }}-ccache-
   
       - name: Configure CMake
-        run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DENABLE_TESTING=ON -DCOVERAGE=ON -DCPM_SOURCE_CACHE=~/cpm-cache
+        # TODO: Add coverage only for Linux
+        run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DENABLE_TESTING=ON -DCPM_SOURCE_CACHE=~/cpm-cache
 
       - name: Build 
         run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }} -j4
