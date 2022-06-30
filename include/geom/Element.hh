@@ -17,8 +17,6 @@ class Element {
         size_t m_A{};
         double m_mass{};
 
-        static std::map<std::string, Element> common_elements;
-
     public:
         Element() = default;
         Element(const std::string&);
@@ -44,6 +42,7 @@ class Element {
         double Mass() const { return m_mass; }
 
         static std::map<std::string, Element> &CommonElements() {
+            static std::map<std::string, Element> common_elements;
             return common_elements;
         }
 

@@ -6,13 +6,11 @@
 
 using NuGeom::Element;
 
-std::map<std::string, Element> Element::common_elements;
-
 Element::Element(const std::string &name) {
-    if(common_elements.find(name) == common_elements.end()) {
+    if(CommonElements().find(name) == CommonElements().end()) {
         throw std::runtime_error("Invalid element " + name);
     }
-    *this = common_elements.at(name);
+    *this = CommonElements().at(name);
 }
 
 Element::Element(const std::string &name, size_t Z,
@@ -23,8 +21,8 @@ Element::Element(const std::string &name, size_t Z,
         m_A = A;
     }
 
-    if(common_elements.find(name) == common_elements.end()) {
-        common_elements[name] = *this;
+    if(CommonElements().find(name) == CommonElements().end()) {
+        CommonElements()[name] = *this;
     }
 }
 
@@ -36,12 +34,12 @@ Element::Element(const std::string &name, const std::string &symbol,
         m_A = A;
     }
 
-    if(common_elements.find(name) == common_elements.end()) {
-        common_elements[name] = *this;        
+    if(CommonElements().find(name) == CommonElements().end()) {
+        CommonElements()[name] = *this;        
     }
 
-    if(common_elements.find(symbol) == common_elements.end()) {
-        common_elements[symbol] = *this;
+    if(CommonElements().find(symbol) == CommonElements().end()) {
+        CommonElements()[symbol] = *this;
     }
 }
 
