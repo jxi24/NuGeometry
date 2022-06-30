@@ -14,10 +14,10 @@ void CreateLogger(bool to_file, int level, int flush_time) {
         auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("geom.log", true);
         file_sink->set_level(slevel);
 
-        spdlog::sinks_init_list sink_list = spdlog::sinks_init_list{file_sink, console_sink};
+        spdlog::sinks_init_list sink_list{file_sink, console_sink};
         logger = std::make_shared<spdlog::logger>("nugeom", sink_list);
     } else {
-        spdlog::sinks_init_list sink_list = spdlog::sinks_init_list{console_sink};
+        spdlog::sinks_init_list sink_list{console_sink};
         logger = std::make_shared<spdlog::logger>("nugeom", sink_list);
     }
     logger -> set_level(slevel);
