@@ -18,15 +18,15 @@ jobs:
         config:
           - {
               name: "Ubuntu Latest GCC", artifact: "Linux.tar.bz2",
-              os: ubuntu-latest
+              os: ubuntu-latest, extension: ""
             }
           - {
               name: "Windows Latest", artifact: "Windows.tar.bz2",
-              os: windows-latest
+              os: windows-latest, extension: ".exe"
             }
           - {
               name: "MacOS Latest", artifact: "MacOS.tar.bz2",
-              os: macos-latest
+              os: macos-latest, extension: ""
             }
 
     steps:
@@ -45,7 +45,7 @@ jobs:
         id: ccache 
         shell: cmake -P {0}
         run: |
-          set(ccache_url "https://github.com/cristianadam/ccache/releases/download/v$ENV{CCACHE_VERSION}/${ { runner.os } }.tar.xz")
+          set(ccache_url "https://github.com/cristianadam/ccache/releases/download/v$ENV{CCACHE_VERSION}/${{ runner.os }}.tar.xz")
           file(DOWNLOAD "${ccache_url}" ./ccache.tar.xz SHOW_PROGRESS)
           execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ccache.tar.xz)
 
@@ -75,7 +75,7 @@ jobs:
         working-directory: ${{github.workspace}}/build
         # Execute tests defined by the CMake configuration.  
         # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-        run: ./test/nugeometry-testsuite
+        run: ./test/nugeometry-testsuite${{ matrix.config.extension }}
        
           # - name: Code coverage
           #   working-directory: ${{github.workspace}}
