@@ -18,15 +18,15 @@ jobs:
         config:
           - {
               name: "Ubuntu Latest GCC", artifact: "Linux.tar.bz2",
-              os: ubuntu-latest, extension: "", prefix: "."
+              os: ubuntu-latest
             }
           - {
               name: "Windows Latest", artifact: "Windows.tar.bz2",
-              os: windows-latest, extension: ".exe", prefix: "Release"
+              os: windows-latest
             }
           - {
               name: "MacOS Latest", artifact: "MacOS.tar.bz2",
-              os: macos-latest, extension: "", prefix: "."
+              os: macos-latest
             }
 
     steps:
@@ -72,10 +72,10 @@ jobs:
         run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }} -j4
 
       - name: Test
-        working-directory: ${{github.workspace}}/build
+        working-directory: ${{ github.workspace }}/build
         # Execute tests defined by the CMake configuration.  
         # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-        run: ./test/${{ matrix.config.prefix }}/nugeometry-testsuite${{ matrix.config.extension }}
+        run: ctest
        
           # - name: Code coverage
           #   working-directory: ${{github.workspace}}
