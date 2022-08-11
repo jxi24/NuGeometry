@@ -8,6 +8,7 @@ namespace NuGeom {
 class Rotation3D;
 class Translation3D;
 class Scale3D;
+class Ray;
 
 class Transform3D {
     public:
@@ -39,6 +40,8 @@ class Transform3D {
             return os;
         }
         std::array<double, 12> GetTransform() const { return m_mat; }
+        static Vector3D ApplyPoint(const Vector3D&, const Transform3D&);
+        static Ray ApplyRay(const Ray&, const Transform3D&);
 
     protected:
         void SetTransform(const std::array<double, 12> &trans) { m_mat = trans; }

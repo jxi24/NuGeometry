@@ -1,4 +1,5 @@
 #include "geom/Transform3D.hh"
+#include "geom/Ray.hh"
 
 #include <array>
 #include <cmath>
@@ -83,6 +84,22 @@ void Transform3D::Decompose(Scale3D &scale, Rotation3D &rot, Translation3D &tran
     trans.SetTransform({1, 0, 0, m_mat[3],
                         0, 1, 0, m_mat[7],
                         0, 0, 1, m_mat[11]});
+}
+
+NuGeom::Vector3D Transform3D::ApplyPoint(const Vector3D &point, const Transform3D &trans) {
+    return trans.Apply(point);
+}
+
+NuGeom::Ray Transform3D::ApplyRay(const Ray &ray, const Transform3D &transform) {
+    Scale3D scale;
+    Rotation3D rot;
+    Translation3D trans;
+    transform.Decompose(scale, rot, trans);
+
+    auto origin = rot.Apply(trans.Apply(ray.Origin()));
+    auto direction = rot.Apply(ray.Direction());
+
+    return {origin, direction};
 }
 
 Rotation3D::Rotation3D(const Vector3D &vec, double angle) : Transform3D() {

@@ -1,8 +1,10 @@
 #pragma once
 
+
 #include "geom/Vector3D.hh"
 #include "geom/Transform3D.hh"
 
+#include <cmath>
 #include <functional>
 #include <iostream>
 #include <map>

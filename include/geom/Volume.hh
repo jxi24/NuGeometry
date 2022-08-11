@@ -66,13 +66,17 @@ class PhysicalVolume {
         bool RayTrace(const Ray &ray, double &time, std::shared_ptr<PhysicalVolume> &pvol) const {
             return m_volume -> RayTrace(ray, time, pvol);
         }
-        void GetLineSegments(const Ray&, std::vector<LineSegment>&) const;
+        void GetLineSegments(const Ray&, std::vector<LineSegment>&, const Transform3D&) const;
 
     private:
         Vector3D TransformPoint(const Vector3D &point) const {
             return m_transform.Apply(point);
         }
+        Vector3D TransformPointInverse(const Vector3D &point) const {
+            return m_transform.Inverse().Apply(point);
+        }
         Ray TransformRay(const Ray &ray) const;
+        Ray TransformRayInverse(const Ray &ray) const;
         std::shared_ptr<LogicalVolume> m_volume;
         std::shared_ptr<PhysicalVolume> m_mother;
         Transform3D m_transform;

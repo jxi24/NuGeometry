@@ -78,4 +78,12 @@ TEST_CASE("Line Segments", "[Volume]") {
     CHECK_THAT(segments[2].Length(), Catch::WithinAbs(sqrt(2), 1e-8));
     CHECK_THAT(segments[3].Length(), Catch::WithinAbs(1-sqrt(2)/2, 1e-8));
     CHECK_THAT(segments[4].Length(), Catch::WithinAbs(1, 1e-8));
+
+    CHECK_THAT(segments[0].Start().Z(), Catch::WithinAbs(-2, 1e-8));
+    CHECK_THAT(segments[1].Start().Z(), Catch::WithinAbs(segments[0].End().Z(), 1e-8));
+    CHECK_THAT(segments[2].Start().Z(), Catch::WithinAbs(segments[1].End().Z(), 1e-8));
+    CHECK_THAT(segments[3].Start().Z(), Catch::WithinAbs(segments[2].End().Z(), 1e-8));
+    CHECK_THAT(segments[4].Start().Z(), Catch::WithinAbs(segments[3].End().Z(), 1e-8));
+    CHECK_THAT(segments[4].End().Z(), Catch::WithinAbs(2, 1e-8));
+    CHECK_THAT(segments[1].Start().Z(), Catch::WithinAbs(-1, 1e-8));
 }

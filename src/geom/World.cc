@@ -55,33 +55,8 @@ bool World::RayTrace(const Ray &ray, double &distance, size_t &idx) const {
 }
 
 std::vector<NuGeom::LineSegment> World::GetLineSegments(const Ray &ray) const {
-    double prev_dist = 0;
     std::vector<NuGeom::LineSegment> segments;
-    size_t step = 0;
-    Vector3D pos = ray.Origin();
-    double distance = 0;
-    double res = 0;
-    std::deque<size_t> material_list;
-    material_list.push_back(SIZE_MAX);
-    while(step < m_max_steps && InWorld(pos)) {
-        pos = ray.Propagate(distance);
-        auto tmp = GetSDFNonNeg(pos);
-        res = tmp.first;
-        distance += res;
-        if(std::abs(res) < m_epsilon) {
-            if(tmp.second != material_list.back()) {
-                segments.emplace_back(distance - prev_dist, material_list.back());
-                material_list.push_back(tmp.second);
-            } else {
-                segments.emplace_back(distance - prev_dist, material_list.back());
-                material_list.pop_back();
-            }
-            prev_dist = distance;
-            distance += 0.01;
-        }
-        step++;
-    }
-    segments.emplace_back(distance - prev_dist, material_list.back());
+    m_volume -> GetLineSegments(ray, segments);
     return segments;
 }
 

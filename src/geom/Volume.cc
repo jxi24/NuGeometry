@@ -1,6 +1,7 @@
 #include "geom/Volume.hh"
 #include "geom/Ray.hh"
 #include "geom/LineSegment.hh"
+#include "spdlog/spdlog.h"
 
 #include <limits>
 #include <numeric>
@@ -66,20 +67,22 @@ bool LogicalVolume::RayTrace(const Ray &ray, double &time, std::shared_ptr<Physi
 }
 
 void LogicalVolume::GetLineSegments(const Ray &ray, std::vector<LineSegment> &segments) const {
+    static constexpr double eps = 1e-8;
     double time = 0;
+    auto shift_ray = Ray(ray.Propagate(eps), ray.Direction());
     std::shared_ptr<PhysicalVolume> pvol = nullptr;
-    if(!RayTrace(ray, time, pvol)) {
-        static constexpr double eps = 1e-8;
+    if(!RayTrace(shift_ray, time, pvol)) {
         auto tmp_origin = ray.Propagate(eps);
         auto tmp_ray = Ray(tmp_origin, ray.Direction());
         time = m_shape -> Intersect(tmp_ray) + eps;
     }
-    segments.emplace_back(time, m_material);
+    time += eps;
+    segments.emplace_back(ray.Origin(), ray.Propagate(time), m_material);
 
     if(!pvol) return;
     auto origin = ray.Propagate(time);
     auto new_ray = Ray(origin, ray.Direction());
-    pvol -> GetLineSegments(new_ray, segments);
+    pvol -> GetLineSegments(new_ray, segments, {});
 }
 
 double PhysicalVolume::Intersect(const Ray &in_ray) const {
@@ -87,24 +90,27 @@ double PhysicalVolume::Intersect(const Ray &in_ray) const {
     return m_volume -> GetShape() -> Intersect(ray);
 }
 
-void PhysicalVolume::GetLineSegments(const Ray &in_ray, std::vector<LineSegment> &segments) const {
-    auto ray = TransformRay(in_ray);
+void PhysicalVolume::GetLineSegments(const Ray &in_ray, std::vector<LineSegment> &segments,
+                                     const Transform3D &from_global) const {
+    static constexpr double eps = 1e-8;
+    auto local_ray = Transform3D::ApplyRay(in_ray, from_global);
+    auto ray = TransformRay(local_ray);
+    auto shift_ray = Ray(ray.Propagate(eps), ray.Direction());
     double time = 0;
     std::shared_ptr<PhysicalVolume> pvol = nullptr;
-    if(!RayTrace(ray, time, pvol)) {
-        static constexpr double eps = 1e-8;
+    if(!RayTrace(shift_ray, time, pvol)) {
         auto tmp_origin = ray.Propagate(eps);
         auto tmp_ray = Ray(tmp_origin, ray.Direction());
-        time = m_volume -> GetShape() -> Intersect(tmp_ray) + eps;
+        time = m_volume -> GetShape() -> Intersect(tmp_ray);
 
         if(m_mother) {
             pvol = m_mother;
-            ray = in_ray;
         }
     }
-    segments.emplace_back(time, m_volume -> GetMaterial());
-    auto origin = ray.Propagate(time);
-    auto new_ray = Ray(origin, ray.Direction());
+    time += eps;
+    auto origin = in_ray.Propagate(time);
+    segments.emplace_back(in_ray.Origin(), origin, m_volume -> GetMaterial());
+    auto new_ray = Ray(origin, in_ray.Direction());
 
     if(!pvol) {
         if(m_volume -> Mother()) {
@@ -112,18 +118,19 @@ void PhysicalVolume::GetLineSegments(const Ray &in_ray, std::vector<LineSegment>
         }
         return;
     }
-    pvol -> GetLineSegments(new_ray, segments);
+    Transform3D transform = m_transform;
+    if(pvol == m_mother) {
+        transform = pvol -> GetTransform().Inverse();
+    }
+    auto newtransform = from_global*transform;
+    pvol -> GetLineSegments(new_ray, segments, newtransform);
 }
 
 NuGeom::Ray PhysicalVolume::TransformRay(const Ray &ray) const {
-    Scale3D scale;
-    Rotation3D rot;
-    Translation3D trans;
-    m_transform.Decompose(scale, rot, trans);
+    return Transform3D::ApplyRay(ray, m_transform);
+}
 
-    auto origin = rot.Apply(trans.Apply(ray.Origin()));
-    auto direction = rot.Apply(ray.Direction());
-
-    return {origin, direction};
+NuGeom::Ray PhysicalVolume::TransformRayInverse(const Ray &ray) const {
+    return Transform3D::ApplyRay(ray, m_transform.Inverse());
 }
 

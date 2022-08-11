@@ -1,6 +1,7 @@
 #include "geom/Parser.hh"
 #include "spdlog/spdlog.h"
 #include <cstring>
+#include <cmath>
 
 using NuGeom::GDMLParser;
 
