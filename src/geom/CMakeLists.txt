@@ -24,6 +24,12 @@ add_executable(geom_test
 target_link_libraries(geom_test PRIVATE project_options project_warnings
                                 PUBLIC geom)
 
+add_executable(prob_test
+    prob.cc
+)
+target_link_libraries(prob_test PRIVATE project_options project_warnings
+                                PUBLIC geom)
+
 if(ENABLE_PYTHON)
     pybind11_add_module(nugeom PythonInterface.cc)
     target_link_libraries(nugeom PRIVATE project_options project_warnings
