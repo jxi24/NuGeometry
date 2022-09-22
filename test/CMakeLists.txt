@@ -14,9 +14,10 @@ add_executable(nugeometry-testsuite
     test_material.cc
     test_shape.cc
     test_volume.cc
+    test_parser.cc
 )
 target_link_libraries(nugeometry-testsuite PRIVATE project_options project_warnings catch_main 
-                                           PUBLIC geom)
+                                           PUBLIC geom spdlog::spdlog)
 
 include(CTest)
 catch_discover_tests(nugeometry-testsuite)

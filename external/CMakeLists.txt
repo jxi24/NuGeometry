@@ -24,7 +24,7 @@ add_library(fmt::fmt ALIAS fmt)
 
 CPMFindPackage(
     NAME spdlog
-    VERSION 1.9.2
+    VERSION 1.10.0
     GITHUB_REPOSITORY gabime/spdlog
     OPTIONS
         "SPDLOG_COMPILED_LIB ON"
@@ -47,6 +47,8 @@ if(ENABLE_TESTING OR ENABLE_FUZZING)
         NAME catch2
         GITHUB_REPOSITORY catchorg/Catch2
         VERSION 2.13.9
+        OPTIONS
+            "CATCH_ENABLE_COVERAGE"
     )
     add_library(Catch2::Catch2 ALIAS Catch2)
 

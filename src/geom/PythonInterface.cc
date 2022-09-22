@@ -38,7 +38,14 @@ PYBIND11_MODULE(nugeom, m) {
 
 void ParserModule(py::module &m) {
     py::class_<NuGeom::GDMLParser>(m, "Parser")
-        .def(py::init<const std::string&>())
+        .def(py::init(
+             [](const std::string &filename) {
+                pugi::xml_document doc;
+                auto result = doc.load_file(filename.c_str());
+                if(!result)
+                    throw std::runtime_error("GDMLParser: Invalid file");
+                return NuGeom::GDMLParser(doc);
+             }))
         .def("get_world", &NuGeom::GDMLParser::GetWorld);
 }
 

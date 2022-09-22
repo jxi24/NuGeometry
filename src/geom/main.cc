@@ -160,7 +160,12 @@ int main(int argc, char* argv[]) {
         std::cout << "Usage:\n  geom_test <input>\n";
         return -1;
     }
-    NuGeom::GDMLParser parse(argv[1]);
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_file(argv[1]);
+    if(!result)
+        throw std::runtime_error("GDMLParser: Invalid file");
+
+    NuGeom::GDMLParser parse(doc);
     NuGeom::World world = parse.GetWorld();
 
     NuGeom::Camera camera({-150, 30, 30}, {0, 0, 0}, 90, 1);
@@ -190,7 +195,7 @@ int main(int argc, char* argv[]) {
     NuGeom::Ray ray = neutrino.MakeRay(NuGeom::Camera::Width()/2, NuGeom::Camera::Height()/2);
     auto lines = world.GetLineSegments(ray);
     for(const auto &line : lines) {
-        std::cout << line.Length() << " " << (line.ShapeID() == SIZE_MAX ? -1 : static_cast<int>(line.ShapeID())) << "\n";
+        std::cout << line.Length() << "\n";
     }
 
     // renderRay(ray, 100, pixels);
@@ -200,3 +205,88 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
+
+/*
+class DetectorSim {
+    public:
+        void Setup(const std::string &geometry) {
+            // Create world from geometry
+            NuGeom::GDMLParser parser(geometry);
+            world = parser.GetWorld();
+        }
+
+        void SetupMaterials() {
+
+        }
+
+        void SetupShapes() {
+            while(true) {
+                std::string shape;
+                std::cout << "What shape? (box, sphere, or exit) ";
+                std::cin >> shape;
+                if(shape == "box") {
+                    double x, y, z;
+                    std::cout << "Dimensions of box (x, y, z) ";
+                    std::cin >> x >> y >> z;
+                    // Check x, y, z > 0
+                    auto box = std::make_shared<NuGeom::Box>(x, y, z);
+                    shapes.push_back(box);
+                } else if(shape == "sphere") {
+                    double r;
+                    std::cout << "Radius of sphere ";
+                    std::cin >> r;
+                    // Check r > 0
+                    auto sphere = std::make_shared<NuGeom::Sphere>(r);
+                    shapes.push_back(sphere);
+                } else if(shape == "exit") {
+                    break;
+                } else {
+                    std::cout << "Invalid shape!" << std::endl;
+                }
+            }
+        }
+
+        void SetupVolumes() {
+            // 1. Select world shape
+            // 2. Ask if there is a shape inside
+            int depth = 1;
+            while(depth > 0) {
+            // 3. Select a shape 
+            // 4. Select a material
+            // 5. Rotate / Translate shape 
+            // 6. Add to world
+            // 7. Return to 2. until you say there is no more in world 
+            //    if yes: (depth++)
+            //    if no: (depth--)
+            }
+        }
+
+        std::vector<NuGeom::Material> GetMaterials() {
+            // return materials in detector
+        }
+
+        void GetMeanFreePath(const std::vector<double> &cross_section) {
+            // Fill result mfp
+            if(cross_section.size() != m_mats.size())
+                throw "ERROR";
+
+            for(size_t i = 0; i < m_mats.size(); ++i) {
+                m_mfp[m_mats[i]] = cross_section[i];
+            }
+        }
+
+        std::pair<Vector3D, NuGeom::Material> GetInteraction(const NuGeom::Ray &ray) {
+            auto segments = world.GetLineSegments(ray);
+            Vector3D point;
+            NuGeom::Material mat;
+            // Choose interaction point
+            return {point, mat};
+        }
+
+    private:
+        NuGeom::World world;
+        std::vector<std::shared_ptr<NuGeom::Shape>> shapes;
+        std::vector<NuGeom::Material> m_mats;
+        std::map<NuGeom::Material, double> m_mfp;
+
+}; */
