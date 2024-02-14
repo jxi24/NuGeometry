@@ -142,13 +142,17 @@ void GDMLParser::ParseMaterials(const pugi::xml_node &materials) {
                                                                node.children("composite").end()));
             Material material(name, density, nelements);
             for(const auto &element : node.children("composite")) {
-                int natoms = element.attribute("n").as_int();
+                auto natoms = element.attribute("n").as_double();
                 // TODO: Allow other materials to be added to a new material
                 if(m_materials.find(element.attribute("ref").as_string()) != m_materials.end()) {
                     throw std::runtime_error("GDMLParser: Using composite materials requires mass fractions");
                 } else {
                     Element elm(element.attribute("ref").as_string());
-                    material.AddElement(elm, natoms);
+                    if(natoms < 1) {
+                        material.AddElement(elm, natoms);
+                    } else {
+                        material.AddElement(elm, static_cast<int>(std::floor(natoms)));
+                    }
                 }
             }
             m_materials[name] = material;

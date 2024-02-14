@@ -1,4 +1,5 @@
 #include "geom/Transform3D.hh"
+#include "fmt/format.h"
 #include "geom/Ray.hh"
 
 #include <array>
@@ -96,6 +97,15 @@ NuGeom::Ray Transform3D::ApplyRay(const Ray &ray, const Transform3D &transform) 
     Translation3D trans;
     transform.Decompose(scale, rot, trans);
 
+    return ApplyRay(ray, trans, rot);
+}
+
+NuGeom::Ray Transform3D::TranslateRay(const Ray &ray, const Translation3D &trans) {
+    auto origin = trans.Apply(ray.Origin());
+    return {origin, ray.Direction(), false};
+}
+
+NuGeom::Ray Transform3D::ApplyRay(const Ray &ray, const Translation3D &trans, const Rotation3D &rot) {
     auto origin = rot.Apply(trans.Apply(ray.Origin()));
     auto direction = rot.Apply(ray.Direction());
 

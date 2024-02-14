@@ -45,6 +45,9 @@ class Vector3D {
         // Operators
         friend Vector3D operator*(double, const Vector3D&);
         friend Vector3D operator/(const Vector3D&, double);
+        friend Vector3D operator/(double, const Vector3D&);
+        const double& operator[](size_t i) const { return m_vec[i]; }
+        double& operator[](size_t i) { return m_vec[i]; }
    
         bool operator==(const Vector3D &other) const {
             return m_vec == other.m_vec;
@@ -101,6 +104,7 @@ class Vector3D {
 
 Vector3D operator*(double, const Vector3D&);
 Vector3D operator/(const Vector3D&, double);
+Vector3D operator/(double, const Vector3D&);
 
 static constexpr Vector3D UnitX = Vector3D(1, 0, 0);
 static constexpr Vector3D UnitY = Vector3D(0, 1, 0);

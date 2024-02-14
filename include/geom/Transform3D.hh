@@ -22,7 +22,7 @@ class Transform3D {
         Transform3D &operator=(const Transform3D&) = default;
         virtual ~Transform3D() = default;
 
-        Vector3D Apply(const Vector3D&) const;
+        virtual Vector3D Apply(const Vector3D&) const;
 
         Transform3D Inverse() const;
         Transform3D operator*(const Transform3D&) const;
@@ -42,11 +42,13 @@ class Transform3D {
         std::array<double, 12> GetTransform() const { return m_mat; }
         static Vector3D ApplyPoint(const Vector3D&, const Transform3D&);
         static Ray ApplyRay(const Ray&, const Transform3D&);
+        static Ray ApplyRay(const Ray&, const Translation3D&, const Rotation3D&);
+        static Ray TranslateRay(const Ray &ray, const Translation3D &trans);
+        bool IsIdentity() const { return m_mat == identity; }
+        constexpr std::array<double, 12> Identity() const { return identity; }
 
     protected:
         void SetTransform(const std::array<double, 12> &trans) { m_mat = trans; }
-
-    private:
         std::array<double, 12> m_mat;
         static constexpr std::array<double, 12> identity{1, 0, 0, 0,
                                                          0, 1, 0, 0,
@@ -107,6 +109,10 @@ class Translation3D : public Transform3D {
                                                                   0, 1, 0, y,
                                                                   0, 0, 1, z) {}
         Translation3D(const Transform3D&);
+
+        Vector3D Apply(const Vector3D &point) const override {
+            return {point.X() + m_mat[3], point.Y() + m_mat[7], point.Z() + m_mat[11]};
+        }
 };
 
 class TranslationX3D : public Translation3D {

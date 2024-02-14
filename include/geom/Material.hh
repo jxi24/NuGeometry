@@ -2,6 +2,7 @@
 
 #include "geom/Element.hh"
 
+#include <iostream>
 #include <vector>
 
 namespace NuGeom {
@@ -61,6 +62,11 @@ class Material {
                 }
             }
             return os;
+        }
+
+        // Comparisons
+        bool operator<(const Material &other) const {
+            return m_name < other.m_name;
         }
 
     private:

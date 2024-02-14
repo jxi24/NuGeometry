@@ -48,6 +48,9 @@ class PhysicalVolume {
             : m_volume{std::move(volume)} {
 
             m_transform = (rot*trans).Inverse();
+            m_transform.Decompose(m_scale, m_rot, m_trans);
+            is_identity = m_transform.IsIdentity();
+            is_translation = m_rot.IsIdentity() && !m_trans.IsIdentity();
         }
 
         const std::shared_ptr<LogicalVolume>& GetLogicalVolume() const { return m_volume; }
@@ -80,6 +83,10 @@ class PhysicalVolume {
         std::shared_ptr<LogicalVolume> m_volume;
         std::shared_ptr<PhysicalVolume> m_mother;
         Transform3D m_transform;
+        Scale3D m_scale;
+        Rotation3D m_rot;
+        Translation3D m_trans;
+        bool is_identity, is_translation;
 };
 
 }

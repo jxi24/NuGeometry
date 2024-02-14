@@ -24,6 +24,12 @@ NuGeom::Ray NuGeom::Shape::TransformRay(const Ray &in_ray) const {
     return {origin, direction};
 }
 
+
+double NuGeom::Shape::Intersect(const Ray &in_ray) const {
+    auto ray = identity_transform ? in_ray : TransformRay(in_ray);
+    return IntersectImpl(ray);
+}
+
 std::pair<double, double> NuGeom::Shape::SolveQuadratic(double a, double b, double c) const {
     const double det = b*b - 4*a*c;
     if(det < 0) return {std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()};
@@ -62,8 +68,7 @@ double NuGeom::CombinedShape::SignedDistance(const Vector3D &in_point) const {
 }
 
 // TODO: Ensure logic for this is the same as SDF calculation
-double NuGeom::CombinedShape::Intersect(const Ray &in_ray) const {
-    auto ray = TransformRay(in_ray);
+double NuGeom::CombinedShape::IntersectImpl(const Ray &ray) const {
     double intersect1 = m_left -> Intersect(ray);
     double intersect2 = m_right -> Intersect(ray);
     double intersect{};
@@ -111,8 +116,7 @@ double NuGeom::Box::SignedDistance(const Vector3D &in_point) const {
     return q.Max().Norm() + std::min(q.MaxComponent(), 0.0);
 }
 
-double NuGeom::Box::Intersect(const Ray &in_ray) const {
-    auto ray = TransformRay(in_ray);
+double NuGeom::Box::IntersectImpl(const Ray &ray) const {
     // Calculate intersection with all planes
     const double tx1 = (-m_params.X() - ray.Origin().X())/ray.Direction().X();
     const double tx2 = (m_params.X() - ray.Origin().X())/ray.Direction().X();
@@ -158,8 +162,7 @@ double NuGeom::Sphere::SignedDistance(const Vector3D &in_point) const {
     return point.Norm() - m_radius;
 }
 
-double NuGeom::Sphere::Intersect(const Ray &in_ray) const {
-    auto ray = TransformRay(in_ray);
+double NuGeom::Sphere::IntersectImpl(const Ray &ray) const {
     const double a = ray.Direction()*ray.Direction();
     const double b = 2*ray.Origin()*ray.Direction();
     const double c = ray.Origin()*ray.Origin() - m_radius;
@@ -192,8 +195,7 @@ double NuGeom::Cylinder::SignedDistance(const Vector3D &in_point) const {
     return q.Max().Norm() + std::min(q.MaxComponent(), 0.0);
 }
 
-double NuGeom::Cylinder::Intersect(const Ray &in_ray) const {
-    auto ray = TransformRay(in_ray);
+double NuGeom::Cylinder::IntersectImpl(const Ray &ray) const {
     const double a = ray.Direction().X()*ray.Direction().X() + ray.Direction().Y()*ray.Direction().Y();
     const double b = 2*ray.Direction().X()*ray.Origin().X() + 2*ray.Direction().Y()*ray.Origin().Y();
     const double c = ray.Origin().X()*ray.Origin().X() + ray.Origin().Y()*ray.Origin().Y() - m_radius;

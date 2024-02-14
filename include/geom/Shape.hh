@@ -33,7 +33,9 @@ enum class ShapeBinaryOp {
 class Shape {
     public:
         Shape(const Rotation3D &rot = Rotation3D(), const Translation3D &trans = Translation3D())
-            : m_rotation{rot.Inverse()}, m_translation{trans.Inverse()} {}
+            : m_rotation{rot.Inverse()}, m_translation{trans.Inverse()} {
+            identity_transform = m_rotation.IsIdentity() && m_translation.IsIdentity();
+        }
         virtual ~Shape() = default;
 
         /// Calculates if the shape contains the point
@@ -50,7 +52,7 @@ class Shape {
         /// Finds if a given ray intersects the shape 
         ///@param ray: The ray to check for an intersection
         ///@return double: The time that the intersection occurs at
-        virtual double Intersect(const Ray&) const = 0;
+        double Intersect(const Ray &in_ray) const;
 
         void SetRotation(const Rotation3D& rot) { m_rotation = rot.Inverse(); }
         void SetTranslation(const Translation3D &trans) { m_translation = trans.Inverse(); }
@@ -62,8 +64,10 @@ class Shape {
         std::pair<double, double> SolveQuadratic(double, double, double) const;
 
     private:
+        virtual double IntersectImpl(const Ray&) const = 0;
         Transform3D m_rotation;
         Transform3D m_translation;
+        bool identity_transform{false};
 };
 
 class ShapeFactory {
@@ -131,10 +135,10 @@ class CombinedShape : public Shape, RegistrableShape<CombinedShape> {
         static std::unique_ptr<Shape> Construct(const pugi::xml_node &node);
 
         double SignedDistance(const Vector3D&) const override;
-        double Intersect(const Ray&) const override;
         double Volume() const override;
 
     private:
+        double IntersectImpl(const Ray&) const override;
         std::shared_ptr<Shape> m_left, m_right;
         ShapeBinaryOp m_op;
 };
@@ -155,10 +159,10 @@ class Box : public Shape, RegistrableShape<Box> {
         static std::unique_ptr<Shape> Construct(const pugi::xml_node &node);
 
         double SignedDistance(const Vector3D&) const override;
-        double Intersect(const Ray&) const override;
         double Volume() const override { return m_params.X()*m_params.Y()*m_params.Z()*8; }
 
     private:
+        double IntersectImpl(const Ray&) const override;
         Vector3D m_params;
 };
 
@@ -178,10 +182,10 @@ class Sphere : public Shape, RegistrableShape<Sphere> {
         static std::unique_ptr<Shape> Construct(const pugi::xml_node &node);
 
         double SignedDistance(const Vector3D&) const override;
-        double Intersect(const Ray&) const override;
         double Volume() const override { return m_radius*m_radius*m_radius*4*M_PI/3.0; }
 
     private:
+        double IntersectImpl(const Ray&) const override;
         double m_radius;
 };
 
@@ -203,10 +207,10 @@ class Cylinder : public Shape, RegistrableShape<Cylinder> {
         static std::unique_ptr<Shape> Construct(const pugi::xml_node &node);
 
         double SignedDistance(const Vector3D&) const override;
-        double Intersect(const Ray&) const override;
         double Volume() const override { return m_radius*m_radius*m_height*M_PI; }
 
     private:
+        double IntersectImpl(const Ray&) const override;
         double m_radius;
         double m_height;
 };

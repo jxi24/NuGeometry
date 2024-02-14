@@ -127,10 +127,14 @@ void PhysicalVolume::GetLineSegments(const Ray &in_ray, std::vector<LineSegment>
 }
 
 NuGeom::Ray PhysicalVolume::TransformRay(const Ray &ray) const {
-    return Transform3D::ApplyRay(ray, m_transform);
+    if(is_identity) return ray;
+    else if(is_translation) return Transform3D::TranslateRay(ray, m_trans);
+    return Transform3D::ApplyRay(ray, m_trans, m_rot);
 }
 
 NuGeom::Ray PhysicalVolume::TransformRayInverse(const Ray &ray) const {
+    if(is_identity) return ray;
+    else if(is_translation) return Transform3D::TranslateRay(ray, m_trans);
     return Transform3D::ApplyRay(ray, m_transform.Inverse());
 }
 

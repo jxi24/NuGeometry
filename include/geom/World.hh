@@ -26,6 +26,7 @@ class World {
         bool SphereTrace(const Ray&, double&, size_t&, size_t&) const;
         bool RayTrace(const Ray&, double&, size_t&) const;
         std::vector<LineSegment> GetLineSegments(const Ray&) const;
+        size_t NDaughters() const { return m_volume -> Daughters().size(); }
 
     private:
         std::pair<double, size_t> GetSDF(const Vector3D&) const;
