@@ -12,7 +12,7 @@ include(CMake/StandardProjectSettings.cmake)
 # Link this 'library' to set the c++ standard / compile-time options requested
 # Additionally, link to get include and external dependencies
 add_library(project_options INTERFACE)
-target_compile_features(project_options INTERFACE cxx_std_14)
+target_compile_features(project_options INTERFACE cxx_std_17)
 target_include_directories(project_options INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
@@ -41,6 +41,7 @@ include(CMake/StaticAnalyzers.cmake)
 # Build options
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" ON)
 option(ENABLE_TESTING "Enable Test Builds" OFF)
+option(ENABLE_INTERACTIVE "Enable interactively moving around" OFF)
 
 # Include external libraries
 include(CMake/CPM.cmake)
@@ -61,6 +62,11 @@ set(LIBSUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
 set(BUILDPATH ${CMAKE_CURRENT_BINARY_DIR})
 set(INSTALLPATH ${CMAKE_INSTALL_PREFIX})
 configure_file(include/geom/System.hh.in ${CMAKE_CURRENT_SOURCE_DIR}/include/geom/System.hh)
+
+# Interactive
+if(ENABLE_INTERACTIVE)
+    find_package(SFML 2.5 COMPONENTS system window graphics REQUIRED)
+endif()
 
 # Testing
 if(ENABLE_TESTING)
